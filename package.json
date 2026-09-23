@@ -1,0 +1,17 @@
+{
+  "name": "visor-casinos-colombia",
+  "version": "1.0.0",
+  "description": "Visor de casinos y establecimientos autorizados de Colombia con login, filtros y graficos",
+  "main": "server.js",
+  "scripts": {
+    "generar-datos": "node scripts/generar_datos.js",
+    "prestart": "node scripts/generar_datos.js",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1"
+  }
+}

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visor Casinos Colombia</title>
+  <link rel="stylesheet" href="/public/css/estilo.css" />
+  <script src="/vendor/chart.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">Visor de Establecimientos Autorizados</div>
+      <div class="userbox">
+        <span id="sesion-nombre"></span>
+        <span id="sesion-rol"></span>
+        <button class="btn" id="btn-usuarios" style="display:none">Usuarios</button>
+        <button class="btn" id="btn-importar" style="display:none">Importar CSV</button>
+        <button class="btn" id="btn-salir">Salir</button>
+      </div>
+    </header>
+
+    <nav class="sidebar" id="nav">
+      <button class="nav-btn active" data-vista="general">Reporte General</button>
+      <button class="nav-btn" data-vista="operadores">Análisis por Operador</button>
+      <button class="nav-btn" data-vista="fabricantes">Análisis de Fabricantes</button>
+      <button class="nav-btn" data-vista="establecimientos">Establecimientos Autorizados</button>
+      <button class="nav-btn" data-vista="geografia">Ubicación Geográfica</button>
+      <button class="nav-btn" data-vista="serial">Registro Serial</button>
+      <button class="nav-btn" data-vista="movimientos">Movimientos</button>
+      <div class="legal">
+        ORDEN Y CONDICIONES LEGALES<br /><br />
+        Sistema de consulta de establecimientos de juegos autorizados.
+        Uso interno de información operativa. Los datos provienen del
+        registro administrativo de operadores y contratos.
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-title" id="titulo-pagina">Reporte General</div>
+
+      <section class="filtros">
+        <div class="campo">
+          <label>Departamento</label>
+          <select id="f-departamento"><option value="">Todos</option></select>
+        </div>
+        <div class="campo filtro-busca-muni">
+          <label>Buscar Mpio.</label>
+          <input id="f-busca-municipio" type="text" placeholder="Filtrar..." />
+        </div>
+        <div class="campo">
+          <label>Municipio</label>
+          <select id="f-municipio"><option value="">Todos</option></select>
+        </div>
+        <div class="campo">
+          <label>Tipo Establecim.</label>
+          <select id="f-tipo"><option value="">Todos</option></select>
+        </div>
+        <div class="campo">
+          <label>Nombre Establecimiento</label>
+          <input id="f-nombre" list="lista-nombres" placeholder="Todos" />
+          <datalist id="lista-nombres"></datalist>
+        </div>
+        <div class="campo">
+          <label>Operador</label>
+          <input id="f-operador" list="lista-operadores" placeholder="Todos" />
+          <datalist id="lista-operadores"></datalist>
+        </div>
+        <div class="campo">
+          <label>Divisa</label>
+          <select id="f-divisa"><option value="">Todas</option></select>
+        </div>
+        <div class="campo">
+          <label>Período</label>
+          <select id="f-periodo"><option value="TODOS">Todos</option></select>
+        </div>
+        <button class="btn icon-btn" id="btn-filtrar" title="Aplicar filtros">⏳</button>
+        <button class="btn icon-btn" id="btn-limpiar" title="Limpiar filtros">✕</button>
+      </section>
+
+      <!-- REPORTE GENERAL -->
+      <section class="vista activa" id="vista-general">
+        <div class="kpis">
+          <div class="kpi"><div class="valor" id="kpi-maquinas">—</div><div class="etiqueta">Máquinas</div></div>
+          <div class="kpi"><div class="valor" id="kpi-establecimientos">—</div><div class="etiqueta">Establecimientos</div></div>
+          <div class="kpi naranja"><div class="valor" id="kpi-operadores">—</div><div class="etiqueta">Operadores</div></div>
+          <div class="kpi"><div class="valor" id="kpi-departamentos">—</div><div class="etiqueta">Departamentos</div></div>
+          <div class="kpi naranja"><div class="valor" id="kpi-online">—</div><div class="etiqueta">Método Online</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="panel"><h3>Máquinas por Tipo de Establecimiento</h3><div class="chart-box" style="height:260px"><canvas id="ch-tipo"></canvas></div></div>
+          <div class="panel"><h3>Top 10 Departamentos</h3><div class="chart-box" style="height:260px"><canvas id="ch-depto"></canvas></div></div>
+          <div class="panel"><h3>Máquinas por Período de Alta</h3><div class="chart-box" style="height:260px"><canvas id="ch-mes"></canvas></div></div>
+          <div class="panel"><h3>Top 5 Fabricantes</h3><div class="chart-box" style="height:260px"><canvas id="ch-top5"></canvas></div></div>
+        </div>
+      </section>
+
+      <!-- OPERADORES -->
+      <section class="vista" id="vista-operadores">
+        <div class="panel" style="margin-bottom:12px">
+          <h3>Top Operadores por Nº de Máquinas</h3>
+          <div class="chart-box" style="height:320px"><canvas id="ch-operadores"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Detalle por Operador</h3>
+          <div class="tabla-scroll">
+            <table>
+              <thead><tr><th>Operador (LOCAL)</th><th class="num">Máquinas</th><th class="num">%</th></tr></thead>
+              <tbody id="tb-operadores"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- FABRICANTES -->
+      <section class="vista" id="vista-fabricantes">
+        <div class="layout-tabla">
+          <div class="panel">
+            <h3>Inventario por Fabricante / Marca</h3>
+            <div class="tabla-scroll">
+              <table>
+                <thead><tr><th>Fabricante / Marca</th><th class="num">Máquinas</th><th class="num">%</th></tr></thead>
+                <tbody id="tb-marcas"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="side-charts">
+            <div class="panel"><h3>Distribución</h3><div class="chart-box" style="height:240px"><canvas id="ch-marcas-dona"></canvas></div></div>
+            <div class="panel kpi-total">
+              <div class="valor" id="fab-total">0</div>
+              <div class="etiqueta">Total Máquinas</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ESTABLECIMIENTOS -->
+      <section class="vista" id="vista-establecimientos">
+        <div class="layout-tabla">
+          <div class="panel">
+            <h3>Detalle de Inventario por Ubicación</h3>
+            <div class="tabla-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Operador</th><th>Contrato</th><th>Establecimiento</th>
+                    <th>Nre</th><th>Serial</th><th>Marca</th><th>Cod Apuesta</th><th>Met Online</th>
+                  </tr>
+                </thead>
+                <tbody id="tb-inventario"></tbody>
+              </table>
+            </div>
+            <div class="paginador">
+              <button class="btn" id="inv-ant">◀</button>
+              <span id="inv-info">—</span>
+              <button class="btn" id="inv-sig">▶</button>
+            </div>
+          </div>
+          <div class="side-charts">
+            <div class="panel">
+              <h3>Método de Juego</h3>
+              <div class="chart-box"><canvas id="ch-online"></canvas></div>
+            </div>
+            <div class="panel kpi-total">
+              <div class="valor" id="est-total">0</div>
+              <div class="etiqueta">Total Máquinas</div>
+            </div>
+            <div class="panel">
+              <h3>Top 5 Fabricantes</h3>
+              <div class="chart-box"><canvas id="ch-top5-lateral"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:12px">
+          <h3>Establecimientos Registrados</h3>
+          <div class="tabla-scroll" style="max-height:240px">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código DANE</th><th>Municipio</th><th>Departamento</th><th>Cod. Local</th>
+                  <th>Local</th><th>Dirección</th><th>NIT</th><th>Establecimiento</th><th>Contrato</th>
+                </tr>
+              </thead>
+              <tbody id="tb-establecimientos"></tbody>
+            </table>
+          </div>
+          <div class="paginador">
+            <button class="btn" id="est-ant">◀</button>
+            <span id="est-info">—</span>
+            <button class="btn" id="est-sig">▶</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GEOGRAFÍA -->
+      <section class="vista" id="vista-geografia">
+        <div class="panel" style="margin-bottom:12px">
+          <h3>Máquinas por Departamento</h3>
+          <div class="chart-box" style="height:320px"><canvas id="ch-geo"></canvas></div>
+        </div>
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Top Municipios</h3>
+            <div class="tabla-scroll" style="max-height:320px">
+              <table>
+                <thead><tr><th>Departamento / Municipio</th><th class="num">Máquinas</th></tr></thead>
+                <tbody id="tb-geo"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Ranking Departamental</h3>
+            <div class="tabla-scroll" style="max-height:320px">
+              <table>
+                <thead><tr><th>Departamento</th><th class="num">Máquinas</th></tr></thead>
+                <tbody id="tb-deptos"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERIAL -->
+      <section class="vista" id="vista-serial">
+        <div class="filtros" style="margin-bottom:12px">
+          <div class="campo" style="flex:1 1 300px">
+            <label>Buscar por NRE o Serial</label>
+            <input id="f-serial" type="text" placeholder="Ej: 1001000001, COL-123..., MO12345" />
+          </div>
+          <button class="btn" id="btn-buscar-serial">Buscar</button>
+        </div>
+        <div class="panel">
+          <h3>Registro Serial</h3>
+          <div class="tabla-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nre</th><th>Serial</th><th>Marca</th><th>Establecimiento</th>
+                  <th>Operador</th><th>Contrato</th><th>Departamento</th><th>Divisa</th><th>Alta</th>
+                </tr>
+              </thead>
+              <tbody id="tb-serial">
+                <tr><td colspan="9" class="vacio">Ingrese un NRE o serial para buscar</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="paginador">
+            <button class="btn" id="ser-ant">◀</button>
+            <span id="ser-info">—</span>
+            <button class="btn" id="ser-sig">▶</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOVIMIENTOS -->
+      <section class="vista" id="vista-movimientos">
+        <div class="panel">
+          <h3>Movimientos de Máquinas</h3>
+          <div class="tabla-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Tipo</th><th>Nre</th><th>Serial</th><th>Marca</th>
+                  <th>Origen</th><th>Destino</th><th>Dpto Destino</th><th>Usuario</th>
+                </tr>
+              </thead>
+              <tbody id="tb-movimientos"></tbody>
+            </table>
+          </div>
+          <div class="paginador">
+            <button class="btn" id="mov-ant">◀</button>
+            <span id="mov-info">—</span>
+            <button class="btn" id="mov-sig">▶</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL USUARIOS -->
+  <div class="modal-fondo" id="modal-usuarios">
+    <div class="modal">
+      <h2>Gestión de Usuarios</h2>
+      <form class="form-row" id="form-usuario">
+        <div class="campo"><label>Usuario</label><input id="nu-usuario" required /></div>
+        <div class="campo"><label>Nombre</label><input id="nu-nombre" required /></div>
+        <div class="campo"><label>Contraseña</label><input id="nu-clave" type="password" required minlength="6" /></div>
+        <div class="campo" style="min-width:120px">
+          <label>Rol</label>
+          <select id="nu-rol"><option value="consulta">Consulta</option><option value="admin">Admin</option></select>
+        </div>
+        <button class="btn" type="submit">Crear</button>
+      </form>
+      <div class="tabla-scroll" style="max-height:300px">
+        <table>
+          <thead><tr><th>ID</th><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Activo</th><th>Acciones</th></tr></thead>
+          <tbody id="tb-usuarios"></tbody>
+        </table>
+      </div>
+      <div style="text-align:right;margin-top:14px">
+        <button class="btn" id="cerrar-usuarios">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL IMPORTAR -->
+  <div class="modal-fondo" id="modal-importar">
+    <div class="modal">
+      <h2>Importar CSV Completo</h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Columnas requeridas: CODIGO_DANE, MUNICIPIO, DEPTO, COD_LOCAL, LOCAL, EST_DIRECCION, NIT, OPERADOR, CONTRATO.
+        El archivo completo reemplaza los datos actuales.
+      </p>
+      <div class="campo">
+        <label>Archivo CSV</label>
+        <input type="file" id="archivo-csv" accept=".csv,text/csv" />
+      </div>
+      <div class="error-msg" id="import-error" style="text-align:left"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn" id="cerrar-importar">Cancelar</button>
+        <button class="btn btn-orange" id="btn-ejecutar-import">Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/public/js/app.js"></script>
+</body>
+</html>
