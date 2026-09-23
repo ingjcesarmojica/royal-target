@@ -43,6 +43,14 @@ body { min-height: 100vh; }
   box-shadow: 0 0 40px rgba(46, 230, 246, 0.12), inset 0 0 30px rgba(46, 230, 246, 0.04);
 }
 
+.login-logo {
+  display: block;
+  max-width: 160px;
+  max-height: 160px;
+  margin: 0 auto 14px;
+  object-fit: contain;
+}
+
 .login-card h1 {
   font-size: 18px;
   color: var(--cyan);
